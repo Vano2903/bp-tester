@@ -1,0 +1,21 @@
+db:
+  driver: "sqlite3"
+  path: "./tester.db"
+
+http:
+  port: "8080"
+
+logger:
+  level: "debug"
+  type: "text"
+
+app:
+  name: "bp-tester"
+  version: "0.0.1"
+
+test:
+  timeout: 2m
+  buildDir: "./build"
+  dockerFilesDir: "./dockerfiles"
+  repeatFor: 10
+  expectedOutput: "800382571"
