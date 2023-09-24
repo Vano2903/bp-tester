@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breakpoint Tester</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+
+<body>
+    <h1>Nuovo Tentativo</h1>
+    <hr>
+    <br>
+    <p>Inserisci il codice sorgente ed invia il tentativo</p>
+    <!-- <br> -->
+    <div class="form-floating col-sm-12 col-md-8 col-lg-6">
+        <textarea class="form-control" style="height: 300px;" placeholder="Leave a comment here" id="floatingTextarea2"
+            style="height: 100px"></textarea>
+        <label for="floatingTextarea2">Sorgente</label>
+    </div>
+    <br>
+    <button type="button" class="btn btn-primary" onclick="sendAttempt()">Invia il tentativo</button>
+    <div class="alert alert-danger" id="error" role="alert" style="display: none;"> </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script>
+        "use strict"
+
+        function isError(message) {
+            var error = document.getElementById("error");
+            error.innerHTML = message;
+            error.style.display = "block";
+        }
+
+        async function sendAttempt() {
+            var error = document.getElementById("error").style.display = "none";
+
+            var source = document.getElementById("floatingTextarea2").value;
+            console.log(source);
+            var response = await fetch("api/v1/attempt/new", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "text/plain"
+                },
+                body: source
+            });
+            var attempt = await response.json();
+            console.log(attempt);
+            if (attempt.is_error) {
+                isError(attempt.message);
+                return
+            }
+            window.location = `/attempt/${attempt.data.code}`;
+        }
+    </script>
+</body>
+
+</html>
+<!-- 
+package main
+
+import (
+"fmt"
+"time"
+)
+
+func main(){
+time.Sleep(2*time.Second)
+fmt.Println(800382571)
+}
+-->

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breakpoint Tester</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+
+<body onload="loadAttemptPage()">
+    <h1 id="title">
+        le info del tentativo:
+    </h1>
+    <hr>
+    <div id="attempt">
+        <div>
+            <h3>Status: <span id="status"></span></h3>
+        </div>
+        <br>
+        <div>
+            <h5 id="createdAt">
+            </h5>
+        </div>
+    </div>
+    <div id="completedAttempt" style="display: none;">
+        <hr>
+        <div id="attemptInfo"></div>
+        <hr>
+        <div id="executions" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-3 ">
+        </div>
+    </div>
+    <div class="alert alert-danger" id="error" role="alert" style="display: none;"> </div>
+    <script>
+        let exampleAttempt = {
+            "code": 200,
+            "is_error": false,
+            "message": "attempt found",
+            "data": {
+                "createdAt": "2023-09-24T22:42:09.522296456+02:00",
+                "code": "at-dwhql",
+                "status": "success",
+                "executions": [
+                    {
+                        "position": 1,
+                        "exitCode": 0,
+                        "executedAt": "2023-09-24T22:42:18.088783528+02:00",
+                        "duration": 2004000000,
+                        "durationString": "2.004s",
+                        "output": "800382571",
+                        "status": "passed"
+                    },
+                    {
+                        "position": 2,
+                        "exitCode": 0,
+                        "executedAt": "2023-09-24T22:42:20.219291004+02:00",
+                        "duration": 2003000000,
+                        "durationString": "2.003s",
+                        "output": "800382571",
+                        "status": "passed"
+                    },
+                    {
+                        "position": 3,
+                        "exitCode": 0,
+                        "executedAt": "2023-09-24T22:42:22.339628738+02:00",
+                        "duration": 2003000000,
+                        "durationString": "2.003s",
+                        "output": "800382571",
+                        "status": "passed"
+                    },
+                    {
+                        "position": 4,
+                        "exitCode": 0,
+                        "executedAt": "2023-09-24T22:42:24.463642142+02:00",
+                        "duration": 2002000000,
+                        "durationString": "2.002s",
+                        "output": "800382571",
+                        "status": "passed"
+                    },
+                    {
+                        "position": 5,
+                        "exitCode": 0,
+                        "executedAt": "2023-09-24T22:42:26.583844586+02:00",
+                        "duration": 2003000000,
+                        "durationString": "2.003s",
+                        "output": "800382571",
+                        "status": "passed"
+                    },
+                    {
+                        "position": 6,
+                        "exitCode": 0,
+                        "executedAt": "2023-09-24T22:42:28.724047016+02:00",
+                        "duration": 2003000000,
+                        "durationString": "2.003s",
+                        "output": "800382571",
+                        "status": "passed"
+                    },
+                    {
+                        "position": 7,
+                        "exitCode": 0,
+                        "executedAt": "2023-09-24T22:42:30.852827612+02:00",
+                        "duration": 2003000000,
+                        "durationString": "2.003s",
+                        "output": "800382571",
+                        "status": "passed"
+                    },
+                    {
+                        "position": 8,
+                        "exitCode": 0,
+                        "executedAt": "2023-09-24T22:42:32.98723815+02:00",
+                        "duration": 2003000000,
+                        "durationString": "2.003s",
+                        "output": "800382571",
+                        "status": "passed"
+                    },
+                    {
+                        "position": 9,
+                        "exitCode": 0,
+                        "executedAt": "2023-09-24T22:42:35.132897971+02:00",
+                        "duration": 2003000000,
+                        "durationString": "2.003s",
+                        "output": "800382571",
+                        "status": "passed"
+                    },
+                    {
+                        "position": 10,
+                        "exitCode": 0,
+                        "executedAt": "2023-09-24T22:42:37.262688844+02:00",
+                        "duration": 2004000000,
+                        "durationString": "2.004s",
+                        "output": "800382571",
+                        "status": "passed"
+                    }
+                ],
+                "best": {
+                    "position": 4,
+                    "exitCode": 0,
+                    "executedAt": "2023-09-24T22:42:24.463642142+02:00",
+                    "duration": 2002000000,
+                    "durationString": "2.002s",
+                    "output": "800382571",
+                    "status": "passed"
+                },
+                "averageDuration": 2003100000,
+                "averageDurationString": "2.0031s"
+            }
+        }
+
+        "use strict"
+
+        const interval = setInterval(getAttemptInfo, 3000);
+        const code = window.location.pathname.split("/")[2];
+
+        function isError(message) {
+            var error = document.getElementById("error");
+            error.innerHTML = message;
+            error.style.display = "block";
+        }
+
+        async function loadAttemptPage() {
+            document.getElementById("error").style.display = "none";
+            document.getElementById("title").innerText += " " + code;
+            await getAttemptInfo();
+        }
+
+        async function getAttemptInfo() {
+            var response = await fetch(`/api/v1/attempt/info/${code}`);
+            var attempt = await response.json();
+            console.log(attempt);
+            if (attempt.is_error) {
+                isError(attempt.message);
+                return
+            }
+
+            renderAttempt(attempt.data);
+        }
+
+
+        function renderAttempt(attempt) {
+            var attemptDiv = document.getElementById("attempt");
+            //show attempt created at
+            let createdAt = new Date(attempt.createdAt);
+            document.getElementById("createdAt").innerHTML = `
+                Creato il ${createdAt.toLocaleDateString()} alle ${createdAt.toLocaleTimeString()}
+            `
+            var statusInfo = document.getElementById("status");
+            const defaultStatus = ["badge", "rounded-pill"];
+            switch (attempt.status) {
+                case "pending":
+                    statusInfo.className = "";
+                    statusInfo.classList.add(...defaultStatus, "bg-secondary");
+                    statusInfo.innerText = "In coda";
+                    break;
+                case "building":
+                    statusInfo.className = "";
+                    statusInfo.classList.add(...defaultStatus, "bg-info");
+                    statusInfo.innerText = "In esecuzione";
+                    document.getElementById("completedAttempt").style.display = "block";
+                    renderExecutions(attempt.executions)
+                    break;
+                case "build_failed":
+                    clearInterval(interval);
+                    statusInfo.className = "";
+                    statusInfo.classList.add(...defaultStatus, "bg-danger");
+                    statusInfo.innerText = "Errore nella compilazione del sorgente";
+                    break;
+                case "failed":
+                    clearInterval(interval);
+                    statusInfo.className = "";
+                    statusInfo.classList.add(...defaultStatus, "bg-danger");
+                    statusInfo.innerText = "Fallito";
+                    document.getElementById("completedAttempt").style.display = "block";
+                    renderExecutions(attempt.executions)
+                    break;
+                case "success":
+                    clearInterval(interval);
+                    statusInfo.className = "";
+                    statusInfo.classList.add(...defaultStatus, "bg-success");
+                    statusInfo.innerText = "Passato";
+                    document.getElementById("completedAttempt").style.display = "block";
+                    renderExecutions(attempt.executions)
+                    renderAttemptStats(attempt)
+                    break;
+            }
+        }
+
+        function renderExecutions(executions) {
+            document.getElementById("executions").innerHTML = "";
+            //<span class="badge rounded-pill bg-success">Success</span>
+            executions.forEach(e => {
+                createExecution(e);
+            });
+        }
+
+        function createExecution(execution) {
+            //create execution div
+            var executionDiv = document.createElement("div");
+            executionDiv.id = `execution-${execution.position}`;
+            executionDiv.className = "col alert"
+            switch (execution.status) {
+                case "passed":
+                    executionDiv.classList.add("alert-success")
+                    break;
+                case "running":
+                    executionDiv.classList.add("alert-info")
+                    break;
+                default:
+                    executionDiv.classList.add("alert-danger")
+                    break;
+            }
+            executionDiv.setAttribute("role", "alert");
+            executionDiv.innerHTML = `
+                <h5 class="alert-heading">Esecuzione ${execution.position}</h5>
+                <hr>
+                <p>Output: ${execution.output}</p>
+                <p>Exit code: ${execution.exitCode}</p>
+                <p>Tempo di esecuzione: ${execution.durationString}</p>
+                <p>Eseguito il: ${new Date(execution.executedAt).toLocaleString()}</p>
+            `
+            document.getElementById("executions").appendChild(executionDiv);
+        }
+
+        function renderAttemptStats(attempt) {
+            var attemptInfoDiv = document.getElementById("attemptInfo");
+            attemptInfoDiv.innerHTML = `
+                <h3>Statistiche:</h3>
+                <p>Tempo medio di esecuzione: ${attempt.averageDurationString}</p>
+                <p>Miglior tempo: ${attempt.best.durationString}</p>
+            `
+            document.getElementById(`execution-${attempt.best.position}`).innerHTML += `
+            <span class="position-absolute top-0 start-10 translate-middle badge rounded-pill bg-warning">
+                Fastest
+            <span class="visually-hidden">fastest execution</span>
+            `
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>
