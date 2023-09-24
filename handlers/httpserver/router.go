@@ -13,6 +13,8 @@ import (
 )
 
 func InitRouter(e *echo.Echo, l *logrus.Logger, controller *controller.Controller, conf *config.Config) *httpHandler {
+	e.Pre(middleware.RemoveTrailingSlash())
+
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogRemoteIP: true,
 		LogMethod:   true,
