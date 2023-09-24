@@ -18,9 +18,9 @@ type Attempt struct {
 	Status                AttemptStatus `json:"status"`
 	FileContent           []byte        `json:"-"` //for now we remove it as the attempts are fully public
 	Executions            []*Execution  `json:"executions" gorm:"-"`
-	Best                  *Execution    `json:"best" gorm:"-"`
-	AverageDuration       time.Duration `json:"averageDuration" gorm:"-"`
-	AverageDurationString string        `json:"averageDurationString" gorm:"-"`
+	Best                  *Execution    `json:"best,omitempty" gorm:"-"`
+	AverageDuration       time.Duration `json:"averageDuration,omitempty" gorm:"-"`
+	AverageDurationString string        `json:"averageDurationString,omitempty" gorm:"-"`
 }
 
 func (a Attempt) String() string {
@@ -38,10 +38,9 @@ func (a AttemptStatus) String() string {
 }
 
 const (
-	AttemptStatusPending     AttemptStatus = "pending"
-	AttemptStatusInvalid     AttemptStatus = "invalid"
+	AttemptStatusPending AttemptStatus = "pending"
+	// AttemptStatusInvalid     AttemptStatus = "invalid"
 	AttemptStatusBuilding    AttemptStatus = "building"
-	AttemptStatusRunning     AttemptStatus = "running"
 	AttemptStatusBuildFailed AttemptStatus = "build_failed"
 	AttemptStatusStopped     AttemptStatus = "stopped"
 	AttemptStatusSuccess     AttemptStatus = "success"
