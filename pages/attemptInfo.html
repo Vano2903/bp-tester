@@ -35,120 +35,6 @@
     </div>
     <div class="alert alert-danger" id="error" role="alert" style="display: none;"> </div>
     <script>
-        let exampleAttempt = {
-            "code": 200,
-            "is_error": false,
-            "message": "attempt found",
-            "data": {
-                "createdAt": "2023-09-24T22:42:09.522296456+02:00",
-                "code": "at-dwhql",
-                "status": "success",
-                "executions": [
-                    {
-                        "position": 1,
-                        "exitCode": 0,
-                        "executedAt": "2023-09-24T22:42:18.088783528+02:00",
-                        "duration": 2004000000,
-                        "durationString": "2.004s",
-                        "output": "800382571",
-                        "status": "passed"
-                    },
-                    {
-                        "position": 2,
-                        "exitCode": 0,
-                        "executedAt": "2023-09-24T22:42:20.219291004+02:00",
-                        "duration": 2003000000,
-                        "durationString": "2.003s",
-                        "output": "800382571",
-                        "status": "passed"
-                    },
-                    {
-                        "position": 3,
-                        "exitCode": 0,
-                        "executedAt": "2023-09-24T22:42:22.339628738+02:00",
-                        "duration": 2003000000,
-                        "durationString": "2.003s",
-                        "output": "800382571",
-                        "status": "passed"
-                    },
-                    {
-                        "position": 4,
-                        "exitCode": 0,
-                        "executedAt": "2023-09-24T22:42:24.463642142+02:00",
-                        "duration": 2002000000,
-                        "durationString": "2.002s",
-                        "output": "800382571",
-                        "status": "passed"
-                    },
-                    {
-                        "position": 5,
-                        "exitCode": 0,
-                        "executedAt": "2023-09-24T22:42:26.583844586+02:00",
-                        "duration": 2003000000,
-                        "durationString": "2.003s",
-                        "output": "800382571",
-                        "status": "passed"
-                    },
-                    {
-                        "position": 6,
-                        "exitCode": 0,
-                        "executedAt": "2023-09-24T22:42:28.724047016+02:00",
-                        "duration": 2003000000,
-                        "durationString": "2.003s",
-                        "output": "800382571",
-                        "status": "passed"
-                    },
-                    {
-                        "position": 7,
-                        "exitCode": 0,
-                        "executedAt": "2023-09-24T22:42:30.852827612+02:00",
-                        "duration": 2003000000,
-                        "durationString": "2.003s",
-                        "output": "800382571",
-                        "status": "passed"
-                    },
-                    {
-                        "position": 8,
-                        "exitCode": 0,
-                        "executedAt": "2023-09-24T22:42:32.98723815+02:00",
-                        "duration": 2003000000,
-                        "durationString": "2.003s",
-                        "output": "800382571",
-                        "status": "passed"
-                    },
-                    {
-                        "position": 9,
-                        "exitCode": 0,
-                        "executedAt": "2023-09-24T22:42:35.132897971+02:00",
-                        "duration": 2003000000,
-                        "durationString": "2.003s",
-                        "output": "800382571",
-                        "status": "passed"
-                    },
-                    {
-                        "position": 10,
-                        "exitCode": 0,
-                        "executedAt": "2023-09-24T22:42:37.262688844+02:00",
-                        "duration": 2004000000,
-                        "durationString": "2.004s",
-                        "output": "800382571",
-                        "status": "passed"
-                    }
-                ],
-                "best": {
-                    "position": 4,
-                    "exitCode": 0,
-                    "executedAt": "2023-09-24T22:42:24.463642142+02:00",
-                    "duration": 2002000000,
-                    "durationString": "2.002s",
-                    "output": "800382571",
-                    "status": "passed"
-                },
-                "averageDuration": 2003100000,
-                "averageDurationString": "2.0031s"
-            }
-        }
-
         "use strict"
 
         const interval = setInterval(getAttemptInfo, 3000);
@@ -240,26 +126,46 @@
             var executionDiv = document.createElement("div");
             executionDiv.id = `execution-${execution.position}`;
             executionDiv.className = "col alert"
+            let status = ""
             switch (execution.status) {
                 case "passed":
                     executionDiv.classList.add("alert-success")
+                    status = "Passato"
                     break;
                 case "running":
                     executionDiv.classList.add("alert-info")
+                    status = "In esecuzione"
                     break;
                 default:
                     executionDiv.classList.add("alert-danger")
+                    status = "Fallito"
                     break;
             }
+
             executionDiv.setAttribute("role", "alert");
-            executionDiv.innerHTML = `
+            console.log(execution.status)
+            if (execution.status === "running") {
+                executionDiv.innerHTML = `
                 <h5 class="alert-heading">Esecuzione ${execution.position}</h5>
                 <hr>
+                <p>Status: ${status}</p>
+                <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                </div>
+                `
+            } else {
+                executionDiv.innerHTML = `
+                <h5 class="alert-heading">Esecuzione ${execution.position}</h5>
+                <hr>
+                <p>Status: ${status}</p>
                 <p>Output: ${execution.output}</p>
                 <p>Exit code: ${execution.exitCode}</p>
                 <p>Tempo di esecuzione: ${execution.durationString}</p>
                 <p>Eseguito il: ${new Date(execution.executedAt).toLocaleString()}</p>
             `
+            }
             document.getElementById("executions").appendChild(executionDiv);
         }
 
