@@ -48,12 +48,8 @@ func (r *ExecitionRepoerSqlite) FindByAttemptID(ctx context.Context, attemptID u
 }
 
 func (r *ExecitionRepoerSqlite) InsertOne(ctx context.Context, execution *model.Execution) error {
-	e := new(model.Execution)
-	result := r.db.WithContext(ctx).Create(e)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
+	result := r.db.WithContext(ctx).Create(execution)
+	return result.Error
 }
 
 func (r *ExecitionRepoerSqlite) UpdateOne(ctx context.Context, execution *model.Execution) error {
