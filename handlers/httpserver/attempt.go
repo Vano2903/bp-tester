@@ -9,7 +9,6 @@ import (
 )
 
 func (h *httpHandler) GetAttemptInfo(c echo.Context) error {
-	//get code from url
 	code := c.Param("code")
 	if code == "" {
 		return respError(c, 400, "invalid code", "code can't be empty")
@@ -22,13 +21,12 @@ func (h *httpHandler) GetAttemptInfo(c echo.Context) error {
 			return respErrorf(c, 404, "attempt not found", "there are no attempts with code %s", code)
 		}
 		h.l.Errorf("error getting attempt by code: %v", err)
-		return respError(c, 500, "unexpected error", "")
+		return respError(c, 500, "unexpected error")
 	}
 	return respSuccess(c, 200, "attempt found", attempt)
 }
 
 func (h *httpHandler) Upload(c echo.Context) error {
-	//read raw body as text/plain
 	ctx := c.Request().Context()
 	body := c.Request().Body
 	defer body.Close()
@@ -47,7 +45,7 @@ func (h *httpHandler) Upload(c echo.Context) error {
 		case controller.ErrQeueuFull:
 			return respError(c, 503, "build queue is full", "the system is processing too many attempts, try again later")
 		}
-		return respError(c, 500, "unexpected error", "")
+		return respError(c, 500, "unexpected error")
 	}
 
 	attempt.Best = nil
