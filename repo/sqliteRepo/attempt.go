@@ -53,8 +53,16 @@ func (r *AttemptRepoerSqlite) FindByCode(ctx context.Context, code string) (*mod
 	return a, nil
 }
 
+func (r *AttemptRepoerSqlite) FindByStatus(ctx context.Context, statuses ...model.AttemptStatus) ([]*model.Attempt, error) {
+	var attempts []*model.Attempt
+	result := r.db.WithContext(ctx).Where("status IN ?", statuses).Find(&attempts)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return attempts, nil
+}
+
 func (r *AttemptRepoerSqlite) InsertOne(ctx context.Context, attempt *model.Attempt) error {
-	// a.Attempt.CreatedAt = time.Now()
 	result := r.db.WithContext(ctx).Create(attempt)
 	if result.Error != nil {
 		return result.Error
