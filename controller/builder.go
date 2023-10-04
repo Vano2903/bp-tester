@@ -11,8 +11,18 @@ import (
 	"github.com/vano2903/bp-tester/model"
 )
 
-// todo: needs to be checked by the routine monitor
-// todo: at start it needs to read all pending attempts in the db and add them to the queue
+func (c *Controller) rebuildQueue(ctx context.Context) error {
+	attempts, err := c.attemptRepo.FindByStatus(ctx, model.AttemptStatusPending, model.AttemptStatusBuilding)
+	if err != nil {
+		return err
+	}
+
+	for _, attempt := range attempts {
+		c.buildQueue <- attempt
+	}
+	return nil
+}
+
 func (c *Controller) ProcessBuildQueue(ctx context.Context, errChan chan error, ID int, routineMonitor chan int) {
 	c.l.Info("starting build queue")
 	defer func() {
@@ -25,6 +35,12 @@ func (c *Controller) ProcessBuildQueue(ctx context.Context, errChan chan error, 
 			c.l.Info("build queue not restarting, context was canceled")
 		}
 	}()
+
+	if err := c.rebuildQueue(ctx); err != nil {
+		c.l.Errorf("error rebuilding queue: %s", err)
+		errChan <- err
+		return
+	}
 
 	var currentAttempt *model.Attempt
 	for {
@@ -121,7 +137,7 @@ func (c *Controller) BuildAttempt(ctx context.Context, attempt *model.Attempt) e
 
 	for i := 1; i <= c.config.Test.RepeatFor; i++ {
 		c.l.Infof("running execution number: %d/%d for attempt %s", i, c.config.Test.RepeatFor, attempt.Code)
-		//create container
+
 		containerName := c.CreateContainerName(attempt.Code)
 		c.l.Infof("creating container %s", containerName)
 		containerID, err := c.CreateNewContainer(ctx, containerName, imageName)
@@ -222,7 +238,7 @@ func (c *Controller) BuildAttempt(ctx context.Context, attempt *model.Attempt) e
 
 		c.l.Infof("execution %d finished with status %s", i, execution.Status)
 		attempt.Executions = append(attempt.Executions, execution)
-		//update attempt
+
 		if err := c.executionRepo.UpdateOne(ctx, execution); err != nil {
 			c.l.Errorf("error updating execution %d: %s", execution.ID, err)
 			return err
@@ -253,7 +269,6 @@ func (c *Controller) BuildAttempt(ctx context.Context, attempt *model.Attempt) e
 }
 
 func (c *Controller) CleanBuildDir(ctx context.Context) error {
-	//cleaning build dir
 	c.l.Info("cleaning build dir")
 	if err := os.RemoveAll(c.config.Test.BuildDir); err != nil {
 		c.l.Errorf("error cleaning build dir %s: %s", c.config.Test.BuildDir, err)
@@ -266,13 +281,11 @@ func (c *Controller) CleanBuildDir(ctx context.Context) error {
 	return nil
 }
 
-// todo: implement
 func (c *Controller) GetExecutionTime(ctx context.Context, t string) (time.Duration, error) {
 	a, err := strconv.Atoi(t)
 	return time.Duration(a) * time.Millisecond, err
 }
 
 func (c *Controller) CheckExecutionOutput(ctx context.Context, output string, expectedValue string) bool {
-	// c.l.Debugf("checking output: %q = %q", output, expectedValue)
 	return output == expectedValue
 }
