@@ -37,6 +37,18 @@ func (r *AttemptRepoerMock) FindByCode(ctx context.Context, code string) (*model
 	return nil, repo.ErrNotFound
 }
 
+func (r *AttemptRepoerMock) FindByStatus(ctx context.Context, statuses ...model.AttemptStatus) ([]*model.Attempt, error) {
+	var attempts []*model.Attempt
+	for _, entity := range r.storage {
+		for _, status := range statuses {
+			if entity.Status == status {
+				attempts = append(attempts, entity)
+			}
+		}
+	}
+	return attempts, nil
+}
+
 func (r *AttemptRepoerMock) InsertOne(ctx context.Context, attempt *model.Attempt) error {
 	r.lastID++
 	attempt.ID = r.lastID
