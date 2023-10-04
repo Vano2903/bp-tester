@@ -52,14 +52,6 @@ func NewConfig(configPath ...string) (*Config, error) {
 		path = configPath[0]
 	}
 
-	// if err := godotenv.Load(path + ".env"); err != nil {
-	// 	if err.Error() != "open "+path+".env: no such file or directory" {
-	// 		return nil, err
-	// 	} else {
-	// 		logrus.Warn(".env file not found, using env variables")
-	// 	}
-	// }
-
 	if err := cleanenv.ReadConfig(path+"config.yml", cfg); err != nil {
 		return nil, fmt.Errorf("config error: %w", err)
 	}

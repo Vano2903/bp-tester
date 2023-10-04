@@ -8,6 +8,7 @@ import (
 	"github.com/vano2903/bp-tester/controller"
 	"github.com/vano2903/bp-tester/model"
 	"github.com/vano2903/bp-tester/pkg/logger"
+	"github.com/vano2903/bp-tester/repo/mock"
 	"github.com/vano2903/bp-tester/repo/sqliteRepo"
 )
 
@@ -30,7 +31,23 @@ func newController() (*controller.Controller, error) {
 	if err != nil {
 		return nil, err
 	}
-	return controller.NewController(l, cfg, attemptRepo, executionRepo, context.Background())
+
+	userRepo, err := sqliteRepo.NewUserRepo(cfg.DB.Path)
+	if err != nil {
+		return nil, err
+	}
+
+	accessTokenRepo := mock.NewAccessTokenRepoer()
+	refreshTokenRepo := mock.NewRefreshTokenRepoer()
+
+	return controller.NewController(context.Background(),
+		l,
+		cfg,
+		attemptRepo,
+		executionRepo,
+		userRepo,
+		accessTokenRepo,
+		refreshTokenRepo)
 }
 
 func init() {
