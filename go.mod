@@ -4,6 +4,7 @@ go 1.21.0
 
 require (
 	github.com/docker/docker v24.0.6+incompatible
+	github.com/google/uuid v1.3.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/sirupsen/logrus v1.9.3
