@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -13,12 +14,12 @@ type HttpError struct {
 	Details string `json:"details,omitempty" example:"Bad Request With More Info"`
 }
 
-func respError(c echo.Context, code int, message, details string) error {
+func respError(c echo.Context, code int, message string, details ...string) error {
 	h := HttpError{
 		IsError: true,
 		Code:    code,
 		Message: message,
-		Details: details,
+		Details: strings.Join(details, " "),
 	}
 
 	return c.JSON(code, h)
