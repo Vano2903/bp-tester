@@ -31,7 +31,6 @@ func (c *Controller) newAttemptModel(ctx context.Context, source []byte) *model.
 }
 
 func (c *Controller) IsValidSource(ctx context.Context, source []byte) error {
-	// c.l.Info("source is valid (not implemented)")
 	if len(source) == 0 {
 		return ErrEmtpySource
 	}
