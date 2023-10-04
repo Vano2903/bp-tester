@@ -5,16 +5,15 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"runtime/debug"
 	"syscall"
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/sirupsen/logrus"
 	"github.com/vano2903/bp-tester/config"
 	"github.com/vano2903/bp-tester/controller"
 	"github.com/vano2903/bp-tester/handlers/httpserver"
 	"github.com/vano2903/bp-tester/pkg/logger"
+	"github.com/vano2903/bp-tester/repo/mock"
 	"github.com/vano2903/bp-tester/repo/sqliteRepo"
 )
 
@@ -36,12 +35,13 @@ func main() {
 
 	l.Debugf("config: %+v", conf)
 
-	defer func(l *logrus.Logger) {
-		if r := recover(); r != nil {
-			l.Errorf("panic: recover: %v", r)
-			l.Errorf("stacktrace from panic: \n%s", string(debug.Stack()))
-		}
-	}(l)
+	// defer func(l *logrus.Logger) {
+	// 	l.Warn("panic: recovering")
+	// 	if r := recover(); r != nil {
+	// 		l.Errorf("panic: recover: %v", r)
+	// 		l.Errorf("stacktrace from panic: \n%s", string(debug.Stack()))
+	// 	}
+	// }(l)
 
 	if conf.DB.Driver != "sqlite3" {
 		l.Fatal("only sqlite3 driver is supported in the current version")
@@ -55,10 +55,20 @@ func main() {
 	executionRepo, err := sqliteRepo.NewExecutionRepo(conf.DB.Path)
 	if err != nil {
 		l.Fatal("new execution sqlite:", err)
+
 	}
+
+	userRepo, err := sqliteRepo.NewUserRepo(conf.DB.Path)
+	if err != nil {
+		l.Fatal("new user sqlite:", err)
+	}
+
+	accessTokenRepo := mock.NewAccessTokenRepoer()
+	refreshTokenRepo := mock.NewRefreshTokenRepoer()
+
 	ctx, cancel := context.WithCancel(context.Background())
 
-	c, err := controller.NewController(l, conf, attemptRepo, executionRepo, ctx)
+	c, err := controller.NewController(ctx, l, conf, attemptRepo, executionRepo, userRepo, accessTokenRepo, refreshTokenRepo)
 	if err != nil {
 		l.Fatal("new controller:", err)
 	}
@@ -66,7 +76,6 @@ func main() {
 	e := echo.New()
 	httpHandler := httpserver.InitRouter(e, l, c, conf)
 
-	// Waiting signal
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt,
 		syscall.SIGINT,
@@ -74,30 +83,37 @@ func main() {
 		syscall.SIGABRT,
 		syscall.SIGTERM)
 
+	var buildErrChan = make(chan error, 100)
 	var RoutineMonitor = make(chan int, 100)
 	RoutineMonitor <- StartWebServer
 	RoutineMonitor <- StartBuildProcessor
-	var buildErrChan = make(chan error, 100)
+	isInterrupted := false
 	for {
 		select {
 		case i := <-interrupt:
+			if isInterrupted {
+				l.Errorf("forced shutdown: %s", i.String())
+				os.Exit(1)
+			}
+			isInterrupted = true
 			l.Info("main - signal: " + i.String())
 			l.Info("main - canceling context")
 			cancel()
-			gracefulTimer := time.Tick(gracefulShutdownTimeout)
-			select {
-			case <-gracefulTimer:
-				l.Info("main - graceful shutdown timeout reached")
-				os.Exit(1)
-			case <-httpHandler.Done:
-				l.Info("main - http server stopped")
-				os.Exit(0)
-			}
+			l.Info("interrupt again to force shutdown")
+			go func() {
+				gracefulTimer := time.Tick(gracefulShutdownTimeout)
+				select {
+				case <-gracefulTimer:
+					l.Info("main - graceful shutdown timeout reached")
+					os.Exit(1)
+				case <-httpHandler.Done:
+					l.Info("main - http server stopped")
+					os.Exit(0)
+				}
+			}()
+
 		case err = <-buildErrChan:
 			l.Errorf("build error: %v", err)
-
-		// case err = <-rmq.Error:
-		// l.Error(fmt.Errorf("rabbitmq: %w", err))
 		default:
 		}
 
