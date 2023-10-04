@@ -10,9 +10,10 @@ import (
 type Attempt struct {
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	ID        uint           `gorm:"primarykey" json:"-"`
 
+	OwnerUserID           uint          `json:"ownerUserID"`
 	CreatedAt             time.Time     `json:"createdAt"`
-	ID                    uint          `gorm:"primarykey" json:"-"`
 	Code                  string        `json:"code"`
 	Output                string        `json:"output,omitempty"`
 	Status                AttemptStatus `json:"status"`
@@ -38,8 +39,7 @@ func (a AttemptStatus) String() string {
 }
 
 const (
-	AttemptStatusPending AttemptStatus = "pending"
-	// AttemptStatusInvalid     AttemptStatus = "invalid"
+	AttemptStatusPending     AttemptStatus = "pending"
 	AttemptStatusBuilding    AttemptStatus = "building"
 	AttemptStatusBuildFailed AttemptStatus = "build_failed"
 	AttemptStatusStopped     AttemptStatus = "stopped"
